@@ -55,6 +55,15 @@ Tienes un sistema de envío de SMS que está presentando problemas de performanc
 - ¿Cómo garantizas que no se pierdan mensajes?
 - ¿Usarías una cola en memoria (Redis) o persistente (RabbitMQ)? ¿por que?
 
+redis - gestor de colas y usando libreria p-queue
+
+load balancer -
+- valida el numero de requests
+- tiempo de respuesta
+
+workers
+consuma la cola y haga los inserts en intervalos de tiempo
+
 ---
 
 ### BONUS: Optimizaciones Adicionales (5-10 min)

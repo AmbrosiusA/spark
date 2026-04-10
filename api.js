@@ -1,5 +1,6 @@
 // api.js - API REST para envío de SMS
 // NOTA: Este código tiene múltiples problemas que deben identificarse y corregirse
+const { body } from 'express-validator';
 
 const express = require('express');
 const db = require('./db');
@@ -7,19 +8,32 @@ const db = require('./db');
 const app = express();
 app.use(express.json());
 
+app.get('health-check', (req,res) =>{
+    res.status(200).json({
+        status: true,
+        message: "Server up"
+    });
+});
+
 // PROBLEMA 1: No valida inputs, no maneja errores correctamente
 app.post('/api/sms/enviar', async (req, res) => {
     const { usuario_id, telefono, mensaje } = req.body;
     
+    body('telefono').isLength({ min:10 }).matches('+52%'); //realizar validaciones con express validator
+    body('mensaje').isLength({max: 160}); 
+
     // PROBLEMA 2: No valida formato de teléfono
     // PROBLEMA 3: No valida longitud del mensaje
     // PROBLEMA 4: No verifica si el usuario existe o tiene saldo
+    //busqueda de usuario, si existe seguir, si no mandar excepcion
     
     // PROBLEMA 5: No maneja errores de BD
     const result = await db.insertarMensaje(usuario_id, telefono, mensaje);
+    //meter un try catch 
     
     // PROBLEMA 6: No implementa cola para alto tráfico
     // En picos de 1000 req/seg esto colapsaría la BD
+    //insertar en cola y avisar al usuario de status ok
     
     // PROBLEMA 7: Response sin estructura estándar
     res.send({ ok: true, id: result.insertId });

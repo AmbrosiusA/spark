@@ -13,10 +13,10 @@ CREATE TABLE IF NOT EXISTS usuarios (
 
 CREATE TABLE IF NOT EXISTS mensajes (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    usuario_id INT NOT NULL,
+    usuario_id INT NOT NULL, --añadir indice en columna usuario_id
     telefono_destino VARCHAR(20) NOT NULL,
     mensaje TEXT NOT NULL,
-    estado ENUM('pendiente', 'enviado', 'fallido') DEFAULT 'pendiente',
+    estado ENUM('pendiente', 'enviado', 'fallido') DEFAULT 'pendiente',--catalogo id foreign key relacionado a otra tabla
     proveedor_id INT,
     intentos INT DEFAULT 0,
     costo DECIMAL(6,3) DEFAULT 0.050,

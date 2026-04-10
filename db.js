@@ -4,11 +4,13 @@
 const mysql = require('mysql2');
 
 // Conexión sin pool (PROBLEMA 1: No usa connection pooling)
-const connection = mysql.createConnection({
+const connection = mysql.createPool({
     host: 'localhost',
     user: 'sms_user',
     password: 'password123',
-    database: 'sms_db'
+    database: 'sms_db',
+    waitForConnections: true,
+    connectionLimit: 10
 });
 
 connection.connect();
@@ -39,6 +41,8 @@ async function obtenerUsuariosConMensajes() {
             resolve(results);
         });
     });
+    //hacer un join con la tabla mensajes
+    //una columna que devuelva como json el resultado del query de abajo mediante un join
     
     // Hace una query por cada usuario (N+1 problem)
     for (let usuario of usuarios) {
@@ -75,9 +79,26 @@ async function obtenerEstadisticas(usuarioId, fechaInicio, fechaFin) {
         AND m.created_at BETWEEN '${fechaInicio}' AND '${fechaFin}'
         GROUP BY u.id, p.nombre
     `;
+
+    const query2 = `SELECT 
+            u.nombre,
+            COUNT(m.id) as total_mensajes,
+            SUM(CASE WHEN m.estado = 'enviado' THEN 1 ELSE 0 END) as enviados,
+            SUM(CASE WHEN m.estado = 'fallido' THEN 1 ELSE 0 END) as fallidos,
+            SUM(m.costo) as costo_total,
+            p.nombre as proveedor
+        FROM usuarios u
+        LEFT JOIN mensajes m ON u.id = m.usuario_id
+        LEFT JOIN proveedores p ON m.proveedor_id = p.id
+        WHERE u.id = ?  -- PROBLEMA 6: SQL Injection vulnerable
+        AND m.created_at BETWEEN '?' AND '?'
+        GROUP BY u.id, p.nombre
+    `;
+
+    const params = [usuarioId,fechaInicio,fechaFin];
     
     return new Promise((resolve, reject) => {
-        connection.query(query, (error, results) => {
+        connection.execute(query2, params, (error, results) => {
             if (error) throw error;
             resolve(results);
         });
